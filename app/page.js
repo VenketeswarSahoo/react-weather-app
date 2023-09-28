@@ -1,113 +1,123 @@
-import Image from 'next/image'
+"use client";
+import React, { useRef, useState } from "react";
+import { BsSearch } from "react-icons/bs";
+import { CiTempHigh } from "react-icons/ci";
+import { TbTemperatureCelsius } from "react-icons/tb";
 
-export default function Home() {
+const Api_key = "80fc6da94b003e0a3801836f8d54cda8";
+
+const page = () => {
+  const inputRef = useRef(null);
+  const [apiData, setapiData] = useState(null);
+  const [showWeather, setshowWeather] = useState(null);
+  const [loading, setloading] = useState(false)
+  const weatherType = [
+    {
+      type: "Clear",
+      img: "https://cdn-icons-png.flaticon.com/512/6974/6974833.png",
+    },
+    {
+      type: "Rain",
+      img: "https://cdn-icons-png.flaticon.com/512/3351/3351979.png",
+    },
+    {
+      type: "Snow",
+      img: "https://cdn-icons-png.flaticon.com/512/642/642102.png",
+    },
+    {
+      type: "Clouds",
+      img: "https://cdn-icons-png.flaticon.com/512/414/414825.png",
+    },
+    {
+      type: "Haze",
+      img: "https://cdn-icons-png.flaticon.com/512/1197/1197102.png",
+    },
+    {
+      type: "Smoke",
+      img: "https://cdn-icons-png.flaticon.com/512/4380/4380458.png",
+    },
+    {
+      type: "Mist",
+      img: "https://cdn-icons-png.flaticon.com/512/4005/4005901.png",
+    },
+    {
+      type: "Drizzle",
+      img: "https://cdn-icons-png.flaticon.com/512/3076/3076129.png",
+    },
+  ];
+
+  const fetchWeather = async () => {
+    const URL = `https://api.openweathermap.org/data/2.5/weather?q=${inputRef
+      .current.value}&units=metric&appid=${Api_key}`;
+    // console.log(inputRef.current.value);
+    setloading(true)
+    fetch(URL)
+      .then(res => res.json())
+      .then(data => {
+        // console.log(data);
+        setapiData(null);
+        if(data.cod == 404 || data.cod == 400){
+          setshowWeather([
+            {
+              type: "Not Found",
+              img: "https://as2.ftcdn.net/v2/jpg/02/48/55/45/1000_F_248554561_KNXAIOQFXLHxxG1OnuNwchZDG76Q7pQH.jpg"
+            }
+          ])
+        }
+        setshowWeather(
+          weatherType.filter(weather => {
+            weather.type === data.weather[0].main;
+          })
+        );
+        console.log(data);
+        setapiData(data);
+        setloading(false)
+      })
+      .catch(err => {
+        console.log(err);
+        setloading(false)
+      });
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="h-screen grid place-items-center">
+      <div className="rounded-md p-4 shadow-lg">
+        <div className="flex items-center justify-between">
+          <input
+            type="text"
+            ref={inputRef}
+            placeholder="Enter Your Location"
+            className="text-xl font-semibold uppercase flex-1 outline-none"
+          />
+          <button type="submit" onClick={fetchWeather}>
+            <BsSearch className="text-2xl" />
+          </button>
         </div>
+        <hr className="mt-4" />
+        {loading ? (
+        <div>loading...</div>
+        ) : (
+          showWeather &&
+          <div className="text-center flex flex-col gap-6 mt-10">
+             {apiData && <p className="text-xl font-semibold">{apiData?.name + "," + apiData?.sys?.country}</p>}
+             <img src={showWeather[0]?.img} className="w-52 mx-auto"
+                />
+            <h3 className="text-2xl font-bold text-zinc-800">
+              {showWeather[0]?.type}
+            </h3>
+            {apiData && <div>
+              <div className="flex justify-center">
+                <CiTempHigh className="text-xl" />
+                <h2 className="ml-1 font-bold">{apiData?.main?.temp}</h2>
+                <TbTemperatureCelsius className="text-[23px]" />
+              </div>
+            </div>
+            }
+          </div>
+          )}
       </div>
+    </div>
+  );
+};
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+export default page;

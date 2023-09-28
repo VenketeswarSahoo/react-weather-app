@@ -1,20 +1,25 @@
 {
+  "homepage": "https://VenketeswarSahoo.github.io/react-weather-app",
   "name": "react-weather-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "next": "latest"
+    "react-icons": "^4.11.0"
   },
   "devDependencies": {
     "autoprefixer": "latest",
+    "gh-pages": "^6.0.0",
     "postcss": "latest",
     "tailwindcss": "latest"
   }
